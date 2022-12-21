@@ -4,6 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 from .Video import Video
 
 class Compiler:
+	TMP_FOLDER = 'vctmp-'
+
 	def __init__(self, clips, fps=None, size=None, duration=None):
 		self.clips = clips
 
