@@ -10,6 +10,7 @@ with open('README.md', 'r') as f:
 requires=[
 	'Pillow==9.3.0',
 	'imageio==2.23.0',
+	'imageio[pyav]',
 	'numpy==1.24.0'
 ]
 
