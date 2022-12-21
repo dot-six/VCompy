@@ -1,7 +1,8 @@
 import sys
 from setuptools import find_packages, setup
 
-from vcompy.version import __version__
+with open('vcompy/version.py', 'r') as f:
+	exec(f.read())
 
 with open('README.md', 'r') as f:
 	README = f.read()
