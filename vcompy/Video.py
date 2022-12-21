@@ -11,11 +11,17 @@ class Video(Media):
 
 		self.fps = fps
 		self.img = None
+		self.metadata = dict()
 
 	@staticmethod
 	def from_file(path):
 		v = Video()
 		v.img = iio.imopen(path, 'r', plugin="pyav")
+
+		v.metadata = v.img.metadata()
+		v.fps = v.metadata['fps']
+
+		v.duration = v.metadata['duration'] * v.fps
 
 		return v
 
