@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 import av
 
 from .Video import Video
+from .Text import Text
 
 class Compiler:
 	TMP_FOLDER = 'vctmp'
@@ -71,6 +72,16 @@ class Compiler:
 					im = clip.get_frame_pil(frameIndex)
 					frame.paste(im)
 					im.close()
+				elif clipType is Text:
+					# TODO: Cache ImageFont
+					_font = ImageFont.load_default()
+
+					try:
+						_font = ImageFont.load(clip.font)
+					except:
+						_font = ImageFont.truetype(clip.font, size=clip.fontsize)
+
+					ctx.text(clip.position, clip.text, fill=clip.color, font=_font)
 			#frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
 			avframe = av.VideoFrame.from_image(frame)
 			frame.close()
