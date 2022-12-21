@@ -1,3 +1,4 @@
+import os
 from PIL import Image, ImageDraw, ImageFont
 
 from .Video import Video
@@ -44,12 +45,20 @@ class Compiler:
 	def save_as(self, filename):
 		frameIndex = 0
 
+		os.mkdir(f"{self.TMP_FOLDER}-img-seq/")
 		# Last frame where?
 		duration = self.get_duration()
 		while frameIndex < duration:
 			frame = Image.new("RGB", self.size, (0, 0, 0))
 			ctx = ImageDraw.Draw(frame)
 			for clip in self.get_clips_in_frame(frameIndex):
+				# Video is base media, so they have (0, 0) position
 				if clip is Video:
-					im = clip.get_frame_pil() # includes .resize
-					frame.paste(im, clip.position)
+					im = clip.get_frame_pil()
+					frame.paste(im)
+			frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
+			frame.close()
+
+			frameIndex += 1
+			yield frameIndex - 1
+
