@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .Video import Video
 
 class Compiler:
-	TMP_FOLDER = 'vctmp-'
+	TMP_FOLDER = 'vctmp'
 
 	def __init__(self, clips, fps=None, size=None, duration=None):
 		self.clips = clips
@@ -39,7 +39,7 @@ class Compiler:
 		clips = list()
 
 		for clip in self.clips:
-			if clip.start >= i and i <= clip.start + clip.duration:
+			if clip.start <= i and i < clip.start + clip.duration:
 				clips.append(clip)
 
 		return clips
@@ -47,17 +47,23 @@ class Compiler:
 	def save_as(self, filename):
 		frameIndex = 0
 
-		os.mkdir(f"{self.TMP_FOLDER}-img-seq/")
+		try:
+			os.mkdir(f"{self.TMP_FOLDER}-img-seq/")
+		except:
+			pass
+
 		# Last frame where?
 		duration = self.get_duration()
 		while frameIndex < duration:
 			frame = Image.new("RGB", self.size, (0, 0, 0))
 			ctx = ImageDraw.Draw(frame)
 			for clip in self.get_clips_in_frame(frameIndex):
+				clipType = type(clip)
 				# Video is base media, so they have (0, 0) position
-				if clip is Video:
-					im = clip.get_frame_pil()
+				if clipType is Video:
+					im = clip.get_frame_pil(frameIndex)
 					frame.paste(im)
+					im.close()
 			frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
 			frame.close()
 

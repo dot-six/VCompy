@@ -1,6 +1,8 @@
 import numpy as np
 import imageio.v3 as iio
 
+from PIL import Image
+
 from .Media import Media
 
 class Video(Media):
@@ -13,7 +15,7 @@ class Video(Media):
 	@staticmethod
 	def from_file(path):
 		v = Video()
-		v.img = iio.imopen(path, 'r')
+		v.img = iio.imopen(path, 'r', plugin="pyav")
 
 		return v
 
