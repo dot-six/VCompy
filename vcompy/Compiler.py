@@ -1,5 +1,7 @@
 import os
+
 from PIL import Image, ImageDraw, ImageFont
+import av
 
 from .Video import Video
 
@@ -46,6 +48,11 @@ class Compiler:
 
 	def save_as(self, filename):
 		frameIndex = 0
+		container = av.open(filename, mode='w')
+		stream = container.add_stream("mpeg4", rate=self.fps)
+		stream.width = self.size[0]
+		stream.height = self.size[1]
+		stream.pix_fmt = "yuv420p"
 
 		try:
 			os.mkdir(f"{self.TMP_FOLDER}-img-seq/")
@@ -64,9 +71,18 @@ class Compiler:
 					im = clip.get_frame_pil(frameIndex)
 					frame.paste(im)
 					im.close()
-			frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
+			#frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
+			avframe = av.VideoFrame.from_image(frame)
 			frame.close()
+
+			for packet in stream.encode(avframe):
+				container.mux(packet)
 
 			frameIndex += 1
 			yield frameIndex - 1
+
+		for packet in stream.encode():
+			container.mux(packet)
+
+		container.close()
 
