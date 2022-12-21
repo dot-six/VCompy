@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+6from PIL import Image, ImageDraw, ImageFont
 
 from .Video import Video
 
@@ -26,7 +26,7 @@ class Compiler:
 			return self.duration
 
 		duration = 0
-		for clip in clips:
+		for clip in self.clips:
 			if clip.duration > duration:
 				duration = clip.duration
 
