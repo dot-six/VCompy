@@ -81,7 +81,10 @@ class Compiler:
 					except:
 						_font = ImageFont.truetype(clip.font, size=clip.fontsize)
 
-					ctx.text(clip.position, clip.text, fill=clip.color, font=_font)
+					ctx.text(
+						clip.position, clip.text,
+						fill=clip.color, font=_font, anchor=clip.anchor, align=clip.align
+					)
 			#frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
 			avframe = av.VideoFrame.from_image(frame)
 			frame.close()
