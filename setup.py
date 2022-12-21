@@ -22,6 +22,6 @@ setup(
 	license='MIT License',
 	classifiers=[],
 	keywords='video editing ffmpeg',
-	packages='vcompy',
+	packages=['vcompy'],
 	install_requires=requires
 )
