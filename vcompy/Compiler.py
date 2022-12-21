@@ -1,4 +1,4 @@
-6from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 from .Video import Video
 
