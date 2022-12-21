@@ -6,8 +6,9 @@ from vcompy.version import __version__
 with open('README.md', 'r') as f:
 	README = f.read()
 
-requires = [
-	'Pillow==9.3.0'
+requires=[
+	'Pillow==9.3.0',
+	'imageio==2.23.0'
 ]
 
 setup(
