@@ -4,7 +4,7 @@ from .Overlay import Overlay
 
 class Text(Overlay):
 	def __init__(self, text=None, font=None, fontsize=16, **kwargs):
-		super.__init__(**kwargs)
+		super().__init__(**kwargs)
 
 		self.text = text
 		self.fontsize = fontsize

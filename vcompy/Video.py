@@ -5,7 +5,7 @@ from .Media import Media
 
 class Video(Media):
 	def __init__(self, fps=24, **kwargs):
-		super.__init__(**kwargs)
+		super().__init__(**kwargs)
 
 		self.fps = fps
 		self.img = None
@@ -22,3 +22,7 @@ class Video(Media):
 			raise Exception('Video self.img unset')
 
 		return self.img.read(index=i)
+
+	def get_frame_pil(self, i):
+		frame = self.get_frame(i)
+		return Image.fromarray(frame)

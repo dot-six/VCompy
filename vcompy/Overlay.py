@@ -2,7 +2,7 @@ from .Media import Media
 
 class Overlay(Media):
 	def __init__(self, size=None, position=None, **kwargs):
-		super.__init__(**kwargs)
+		super().__init__(**kwargs)
 
 		if size is None:
 			size = (0, 0)
