@@ -20,6 +20,7 @@ setup(
 	author='Hanz <hanz@godot.id>',
 	description='Video compiler',
 	long_description=README,
+	long_description_content_type='text/markdown',
 	url='https://github.com/dot-six/vcompy',
 	license='MIT License',
 	classifiers=[],
