@@ -20,7 +20,7 @@ setup(
 	long_description=README,
 	url='https://github.com/dot-six/vcompy',
 	license='MIT License',
-	classifiers=[]
+	classifiers=[],
 	keywords='video editing ffmpeg',
 	packages='vcompy',
 	install_requires=requires
