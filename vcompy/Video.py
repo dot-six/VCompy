@@ -93,8 +93,8 @@ class Video(Media):
 		if self._demuxer is None:
 			self._demuxer = self.img._container.demux(video=0)
 
-		for packet in self._demuxer:
-			try:
+		try:
+			for packet in self._demuxer:
 				for frameo in packet.decode():
 					if frameo.pts:
 						pts = frameo.pts
@@ -129,8 +129,8 @@ class Video(Media):
 					if not framei is None:
 						# Normally count up frame number
 						framei += 1
-			except av.error.EOFError:
-				return
+		except av.error.EOFError:
+			return
 
 	def get_frame(self, i, format='rgb24'):
 		if self.img is None:
