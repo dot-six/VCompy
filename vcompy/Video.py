@@ -54,6 +54,7 @@ class Video(Media):
 		self.clip_start = clipstart
 
 		if cacheframes:
+#			print("CACHING ==================================")
 			self.cache_frames()
 
 		return self
@@ -102,6 +103,9 @@ class Video(Media):
 				if framei >= self.clip_start and framei < self.clip_start + self.duration:
 					self.cache_frame(frameo, framei - self.clip_start)
 				elif framei >= self.clip_start + self.duration:
+#					print("FRAMES")
+#					print(self._frames)
+#					print()
 					return
 				else:
 					...
@@ -119,6 +123,7 @@ class Video(Media):
 
 	def get_frame_pil(self, i, format='rgb24'):
 		frame = self.get_frame(i, format=format)
+#		print(f"[{i}], Frame: {not frame is None}")
 
 		if frame is None:
 			return None

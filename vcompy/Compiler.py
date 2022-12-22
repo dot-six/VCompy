@@ -78,6 +78,7 @@ class Compiler:
 			frame = Image.new("RGB", self.size, (0, 0, 0))
 			ctx = ImageDraw.Draw(frame)
 			clipsInFrame = self.get_clips_in_frame(self.frameIndex)
+			newCache = []
 
 			for clip in clipsInFrame:
 				clipType = type(clip)
@@ -90,24 +91,28 @@ class Compiler:
 
 				# Video is base media, so they have (0, 0) position
 				if clipType is Video:
+#					print(f"[{self.frameIndex}], Cached: {not notcached}")
 					if notcached:
 						# Create subclip
 						csstart = clip.clip_start
-						csend = csstart + self.pagelifetime + 1 #clip.duration
 						cstart = clip.start
+						csend = cstart + self.pagelifetime #clip.duration
 						subclip = clip.sub_clip_copy(csstart, csend, True, start=(cstart))
 
 						# Append to cache
 						self.pagecache.append(subclip)
+						newCache.append(subclip)
 						# Append to clips
 						self.clips.append(subclip)
 
 						# Remove part of original
-						clip.start = subclip.start + subclip.duration + 1
+						clip.start = subclip.start + subclip.duration
+						clip.duration -= subclip.duration
 						clip.sub_clip(csend, cacheframes=False)
 
 						# Overwrite clip
 						clip = subclip
+#						print(f"{clip.clip_start} <{clip.start}>---------<{clip.start + clip.duration}>")
 
 					# Paste video into canvas
 					im = clip.get_frame_pil(self.frameIndex - clip.start)
@@ -133,7 +138,7 @@ class Compiler:
 
 			# Check for outdated cache
 			for cache in self.pagecache:
-				if not cache in clipsInFrame:
+				if not cache in clipsInFrame and not cache in newCache:
 					self.pagecache.remove(cache)
 					self.clips.remove(cache)
 
