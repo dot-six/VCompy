@@ -97,7 +97,7 @@ class Compiler:
 						csstart = clip.clip_start
 						cstart = clip.start
 						csend = cstart + self.pagelifetime #clip.duration
-						subclip = clip.sub_clip_copy(csstart, csend, True, start=(cstart))
+						subclip = clip.sub_clip_copy(csstart, csend, True, framei=csstart, start=(cstart))
 
 						# Append to cache
 						self.pagecache.append(subclip)
@@ -108,7 +108,7 @@ class Compiler:
 						# Remove part of original
 						clip.start = subclip.start + subclip.duration
 						clip.duration -= subclip.duration
-						clip.sub_clip(csend, cacheframes=False)
+						clip.sub_clip(csend, cacheframes=False, framei=(csstart + subclip.duration))
 
 						# Overwrite clip
 						clip = subclip
@@ -145,8 +145,8 @@ class Compiler:
 			for packet in stream.encode(avframe):
 				container.mux(packet)
 
+			yield self.frameIndex
 			self.frameIndex += 1
-			yield self.frameIndex - 1
 
 		for packet in stream.encode():
 			container.mux(packet)

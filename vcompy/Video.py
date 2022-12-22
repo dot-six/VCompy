@@ -25,6 +25,7 @@ class Video(Media):
 
 		self.keyframe_interval = 0.10
 		self._frames = []
+		self._demuxer = None
 
 	@staticmethod
 	def from_file(path, cacheframes=False, **kwargs):
@@ -43,7 +44,7 @@ class Video(Media):
 
 		return v
 
-	def sub_clip(self, clipstart, end=None, cacheframes=False):
+	def sub_clip(self, clipstart, end=None, cacheframes=False, framei=None):
 		# end defaults to self.duration
 		if end is None:
 			duration = self.duration
@@ -55,44 +56,51 @@ class Video(Media):
 
 		if cacheframes:
 #			print("CACHING ==================================")
-			self.cache_frames()
+			self.cache_frames(framei=framei)
 
 		return self
 
-	def sub_clip_copy(self, clipstart, end=None, cacheframes=True, **kwargs):
-		v = Video.from_file(self.resourcePath, **kwargs)
+	def sub_clip_copy(self, clipstart, end=None, cacheframes=True, framei=None, **kwargs):
+		v = Video(**kwargs)
 
-		return v.sub_clip(clipstart, end, cacheframes=cacheframes)
+		v.resourcePath = self.resourcePath
+		v.img = self.img
+
+		v.metadata = v.img.metadata()
+		v.fps = v.metadata['fps']
+
+		v._demuxer = self._demuxer
+
+		return v.sub_clip(clipstart, end, cacheframes=cacheframes, framei=framei)
 
 	def cache_frame(self, frame, i):
 		framesLen = len(self._frames)
 		if i >= framesLen:
-			dl = framesLen + 1 - i
+			dl = max(1, framesLen - i)
 			for _ in range(dl):
 				self._frames.append(None)
 
 		self._frames[i] = frame
 
-	def cache_frames(self):
+	def cache_frames(self, framei=None):
 		timebase = self.img._container.streams.video[0].time_base
 
 		# no need more cache
 		if len(self._frames) >= self.fps * self.duration:
 			return
 
-		framei = None
-		for packet in self.img._container.demux(video=0):
+		if self._demuxer is None:
+			self._demuxer = self.img._container.demux(video=0)
+
+		for packet in self._demuxer:
 			for frameo in packet.decode():
 				if frameo.pts:
 					pts = frameo.pts
 				else:
 					pts = frameo.dts
 
-				if framei is None:
+				if framei is None or framei == 0:
 					framei = pts_to_frame(pts, timebase, self.fps, 0) # TODO start time
-				elif not framei is None:
-					# Normally count up frame number
-					framei += 1
 
 				# sub clipping
 				# No duplicate framei
@@ -109,6 +117,10 @@ class Video(Media):
 					return
 				else:
 					...
+
+				if not framei is None:
+					# Normally count up frame number
+					framei += 1
 
 	def get_frame(self, i, format='rgb24'):
 		if self.img is None:
