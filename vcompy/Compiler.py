@@ -1,4 +1,5 @@
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 import av
@@ -21,6 +22,10 @@ class Compiler:
 		self.size = size
 
 		self.duration = duration
+
+		# resource cache
+		self.pagesize = 5 * self.fps
+		self.pagecache = []
 
 	@staticmethod
 	def simple(clips):
@@ -73,7 +78,7 @@ class Compiler:
 				clipType = type(clip)
 				# Video is base media, so they have (0, 0) position
 				if clipType is Video:
-					im = clip.get_frame_pil(frameIndex)
+					im = clip.get_frame_pil(frameIndex - clip.start)
 					if not im is None:
 						frame.paste(im)
 						im.close()
