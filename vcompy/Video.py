@@ -80,7 +80,7 @@ class Video(Media):
 			for _ in range(dl):
 				self._frames.append(None)
 
-		self._frames[i] = frame
+		self._frames[int(i)] = frame
 
 	def cache_frames(self, framei=None):
 		timebase = self.img._container.streams.video[0].time_base
@@ -99,8 +99,13 @@ class Video(Media):
 				else:
 					pts = frameo.dts
 
+				guessedFrame = pts_to_frame(pts, timebase, self.fps, 0)
 				if framei is None or framei == 0:
-					framei = pts_to_frame(pts, timebase, self.fps, 0) # TODO start time
+					framei = guessedFrame # TODO start time
+				if guessedFrame < framei:
+					# Pad demuxer
+					# TODO: seek instead
+					continue
 
 				# sub clipping
 				# No duplicate framei
@@ -109,6 +114,7 @@ class Video(Media):
 					...
 
 				if framei >= self.clip_start and framei < self.clip_start + self.duration:
+					##### !
 					self.cache_frame(frameo, framei - self.clip_start)
 				elif framei >= self.clip_start + self.duration:
 #					print("FRAMES")
@@ -129,7 +135,7 @@ class Video(Media):
 		frame = None
 
 		if i < len(self._frames):
-			frame = self.img._unpack_frame(self._frames[i], format=format)
+			frame = self.img._unpack_frame(self._frames[int(i)], format=format)
 
 		return frame
 

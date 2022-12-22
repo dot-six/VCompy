@@ -96,7 +96,7 @@ class Compiler:
 						# Create subclip
 						csstart = clip.clip_start
 						cstart = clip.start
-						csend = cstart + self.pagelifetime #clip.duration
+						csend = csstart + self.pagelifetime #clip.duration
 						subclip = clip.sub_clip_copy(csstart, csend, True, framei=csstart, start=(cstart))
 
 						# Append to cache
@@ -108,7 +108,8 @@ class Compiler:
 						# Remove part of original
 						clip.start = subclip.start + subclip.duration
 						clip.duration -= subclip.duration
-						clip.sub_clip(csend, cacheframes=False, framei=(csstart + subclip.duration))
+#						clip.sub_clip(csend, cacheframes=False, framei=(csstart + subclip.duration))
+						clip.sub_clip(csend, cacheframes=False, framei=csend)
 
 						# Overwrite clip
 						clip = subclip
