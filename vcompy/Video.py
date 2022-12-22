@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 import imageio.v3 as iio
+import av
 
 from PIL import Image
 
@@ -93,40 +94,43 @@ class Video(Media):
 			self._demuxer = self.img._container.demux(video=0)
 
 		for packet in self._demuxer:
-			for frameo in packet.decode():
-				if frameo.pts:
-					pts = frameo.pts
-				else:
-					pts = frameo.dts
+			try:
+				for frameo in packet.decode():
+					if frameo.pts:
+						pts = frameo.pts
+					else:
+						pts = frameo.dts
 
-				guessedFrame = pts_to_frame(pts, timebase, self.fps, 0)
-				if framei is None or framei == 0:
-					framei = guessedFrame # TODO start time
-				if guessedFrame < framei:
-					# Pad demuxer
-					# TODO: seek instead
-					continue
+					guessedFrame = pts_to_frame(pts, timebase, self.fps, 0)
+					if framei is None or framei == 0:
+						framei = guessedFrame # TODO start time
+					if guessedFrame < framei:
+						# Pad demuxer
+						# TODO: seek instead
+						continue
 
-				# sub clipping
-				# No duplicate framei
-				# TODO: Is this fast enough?
-				if framei < len(self._frames):
-					...
+					# sub clipping
+					# No duplicate framei
+					# TODO: Is this fast enough?
+					if framei < len(self._frames):
+						...
 
-				if framei >= self.clip_start and framei < self.clip_start + self.duration:
-					##### !
-					self.cache_frame(frameo, framei - self.clip_start)
-				elif framei >= self.clip_start + self.duration:
-#					print("FRAMES")
-#					print(self._frames)
-#					print()
-					return
-				else:
-					...
+					if framei >= self.clip_start and framei < self.clip_start + self.duration:
+						##### !
+						self.cache_frame(frameo, framei - self.clip_start)
+					elif framei >= self.clip_start + self.duration:
+	#					print("FRAMES")
+	#					print(self._frames)
+	#					print()
+						return
+					else:
+						...
 
-				if not framei is None:
-					# Normally count up frame number
-					framei += 1
+					if not framei is None:
+						# Normally count up frame number
+						framei += 1
+			except av.error.EOFError:
+				return
 
 	def get_frame(self, i, format='rgb24'):
 		if self.img is None:
