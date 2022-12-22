@@ -53,6 +53,10 @@ class Video(Media):
 			duration = abs(end - clipstart)
 		self.duration = duration
 
+		# Cap duration to metadata
+		if self.metadata['duration'] * self.fps < duration:
+			self.duration = duration
+
 		self.clip_start = clipstart
 
 		if cacheframes:
