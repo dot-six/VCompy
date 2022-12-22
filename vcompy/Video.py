@@ -58,8 +58,8 @@ class Video(Media):
 
 		return self
 
-	def sub_clip_copy(self, start, end=None, cacheframes=True):
-		v = Video.from_file(self.resourcePath)
+	def sub_clip_copy(self, start, end=None, cacheframes=True, **kwargs):
+		v = Video.from_file(self.resourcePath, **kwargs)
 
 		return v.sub_clip(start, end, cacheframes=cacheframes)
 
