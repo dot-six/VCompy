@@ -55,6 +55,10 @@ class Compiler:
 		stream.height = self.size[1]
 		stream.pix_fmt = "yuv420p"
 
+		# Set container flags
+		container.flush_packets = True
+		# TODO: container.format.allow_flush = True
+
 		try:
 			os.mkdir(f"{self.TMP_FOLDER}-img-seq/")
 		except:
@@ -70,8 +74,9 @@ class Compiler:
 				# Video is base media, so they have (0, 0) position
 				if clipType is Video:
 					im = clip.get_frame_pil(frameIndex)
-					frame.paste(im)
-					im.close()
+					if not im is None:
+						frame.paste(im)
+						im.close()
 				elif clipType is Text:
 					# TODO: Cache ImageFont
 					_font = ImageFont.load_default()
