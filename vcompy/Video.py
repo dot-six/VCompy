@@ -27,8 +27,8 @@ class Video(Media):
 		self._frames = []
 
 	@staticmethod
-	def from_file(path, cacheframes=False):
-		v = Video()
+	def from_file(path, cacheframes=False, **kwargs):
+		v = Video(**kwargs)
 
 		v.resourcePath = path
 		v.img = iio.imopen(path, 'r', plugin="pyav")
@@ -43,25 +43,25 @@ class Video(Media):
 
 		return v
 
-	def sub_clip(self, start, end=None, cacheframes=True):
+	def sub_clip(self, clipstart, end=None, cacheframes=False):
 		# end defaults to self.duration
 		if end is None:
 			duration = self.duration
 		else:
-			duration = abs(end - start)
+			duration = abs(end - clipstart)
 		self.duration = duration
 
-		self.clip_start = start
+		self.clip_start = clipstart
 
 		if cacheframes:
 			self.cache_frames()
 
 		return self
 
-	def sub_clip_copy(self, start, end=None, cacheframes=True, **kwargs):
+	def sub_clip_copy(self, clipstart, end=None, cacheframes=True, **kwargs):
 		v = Video.from_file(self.resourcePath, **kwargs)
 
-		return v.sub_clip(start, end, cacheframes=cacheframes)
+		return v.sub_clip(clipstart, end, cacheframes=cacheframes)
 
 	def cache_frame(self, frame, i):
 		framesLen = len(self._frames)
@@ -74,6 +74,10 @@ class Video(Media):
 
 	def cache_frames(self):
 		timebase = self.img._container.streams.video[0].time_base
+
+		# no need more cache
+		if len(self._frames) >= self.fps * self.duration:
+			return
 
 		framei = None
 		for packet in self.img._container.demux(video=0):
@@ -90,6 +94,11 @@ class Video(Media):
 					framei += 1
 
 				# sub clipping
+				# No duplicate framei
+				# TODO: Is this fast enough?
+				if framei < len(self._frames):
+					...
+
 				if framei >= self.clip_start and framei < self.clip_start + self.duration:
 					self.cache_frame(frameo, framei - self.clip_start)
 				elif framei >= self.clip_start + self.duration:

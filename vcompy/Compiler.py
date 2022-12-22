@@ -24,8 +24,11 @@ class Compiler:
 		self.duration = duration
 
 		# resource cache
-		self.pagesize = 5 * self.fps
+		self.pagelifetime = 2 * self.fps
+		self.pagesize = 2 * self.fps
 		self.pagecache = []
+
+		self.frameIndex = 0
 
 	@staticmethod
 	def simple(clips):
@@ -53,7 +56,7 @@ class Compiler:
 		return clips
 
 	def save_as(self, filename):
-		frameIndex = 0
+		self.frameIndex = 0
 		container = av.open(filename, mode='w')
 		stream = container.add_stream("mpeg4", rate=self.fps)
 		stream.width = self.size[0]
@@ -71,14 +74,43 @@ class Compiler:
 
 		# Last frame where?
 		duration = self.get_duration()
-		while frameIndex < duration:
+		while self.frameIndex < duration:
 			frame = Image.new("RGB", self.size, (0, 0, 0))
 			ctx = ImageDraw.Draw(frame)
-			for clip in self.get_clips_in_frame(frameIndex):
+			clipsInFrame = self.get_clips_in_frame(self.frameIndex)
+
+			for clip in clipsInFrame:
 				clipType = type(clip)
+
+				# Check if clip not yet in cache
+				# then sign
+				notcached = False
+				if not clip in self.pagecache:
+					notcached = True
+
 				# Video is base media, so they have (0, 0) position
 				if clipType is Video:
-					im = clip.get_frame_pil(frameIndex - clip.start)
+					if notcached:
+						# Create subclip
+						csstart = clip.clip_start
+						csend = csstart + self.pagelifetime + 1 #clip.duration
+						cstart = clip.start
+						subclip = clip.sub_clip_copy(csstart, csend, True, start=(cstart))
+
+						# Append to cache
+						self.pagecache.append(subclip)
+						# Append to clips
+						self.clips.append(subclip)
+
+						# Remove part of original
+						clip.start = subclip.start + subclip.duration + 1
+						clip.sub_clip(csend, cacheframes=False)
+
+						# Overwrite clip
+						clip = subclip
+
+					# Paste video into canvas
+					im = clip.get_frame_pil(self.frameIndex - clip.start)
 					if not im is None:
 						frame.paste(im)
 						im.close()
@@ -95,15 +127,21 @@ class Compiler:
 						clip.position, clip.text,
 						fill=clip.color, font=_font, anchor=clip.anchor, align=clip.align
 					)
-			#frame.save(f"{self.TMP_FOLDER}-img-seq/{frameIndex}.png", format="PNG")
+			#frame.save(f"{self.TMP_FOLDER}-img-seq/{self.frameIndex}.png", format="PNG")
 			avframe = av.VideoFrame.from_image(frame)
 			frame.close()
+
+			# Check for outdated cache
+			for cache in self.pagecache:
+				if not cache in clipsInFrame:
+					self.pagecache.remove(cache)
+					self.clips.remove(cache)
 
 			for packet in stream.encode(avframe):
 				container.mux(packet)
 
-			frameIndex += 1
-			yield frameIndex - 1
+			self.frameIndex += 1
+			yield self.frameIndex - 1
 
 		for packet in stream.encode():
 			container.mux(packet)
